@@ -13,7 +13,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .margin(10)
         .split(f.size());
 
-    let selected_style = Style::default().add_modifier(Modifier::REVERSED);
+    let selected_style = Style::default().bg(Color::Green).fg(Color::White);
     let normal_style = Style::default().bg(Color::Gray).fg(Color::Black);
 
     // TODO improve handling of current sheet
@@ -28,26 +28,23 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let mut constraints: Vec<Constraint> = vec![];
 
     let t = if let Some(current) = &app.current {
-        let rows = current
-            .iter()
-            .enumerate()
-            .filter(|(i, _)| *i != 0)
-            .map(|(_, item)| {
-                let height = item
-                    .iter()
-                    .map(|content| content.chars().filter(|c| *c == '\n').count())
-                    .max()
-                    .unwrap_or(0)
-                    + 1;
-                let cells = item.iter().map(|c| Cell::from(c.clone()));
-                Row::new(cells).height(height as u16).bottom_margin(1)
+        let rows = current.iter().map(|item| {
+            let height = item
+                .iter()
+                .map(|content| content.chars().filter(|c| *c == '\n').count())
+                .max()
+                .unwrap_or(0)
+                + 1;
+            let cells = item.iter().map(|c| {
+                Cell::from(c.clone()).style(Style::default().fg(Color::Black).bg(Color::White))
             });
+            Row::new(cells).height(height as u16).bottom_margin(1)
+        });
         constraints = current
             .iter()
             .map(|_| Constraint::Min(10))
             .collect::<Vec<Constraint>>();
         let t = Table::new(rows)
-            .header(header)
             .block(Block::default().borders(Borders::ALL).title("Table"))
             .highlight_style(selected_style)
             .highlight_symbol(">> ")
